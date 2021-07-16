@@ -14,8 +14,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Future<Album> futureAlbum;
-
   @override
   void initState() {
     super.initState();
@@ -24,7 +22,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     var futureBuilder = new FutureBuilder(
-      future: _getData(),
+      future: getData(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
@@ -44,13 +42,13 @@ class _MyAppState extends State<MyApp> {
     );
 
     return MaterialApp(
-      title: 'A tal da lista infinita',
+      title: 'Minha lista de fotos',
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('A tal da lista infinita'),
+          title: Text('Minha lista de fotos'),
         ),
         body: futureBuilder,
       ),
@@ -59,16 +57,16 @@ class _MyAppState extends State<MyApp> {
 }
 
 Widget createListView(BuildContext context, AsyncSnapshot snapshot) {
-  List<Album> values = snapshot.data;
+  List<Photo> photos = snapshot.data;
   return ListView.builder(
-    itemCount: values.length,
+    itemCount: photos.length,
     cacheExtent: 10.0,
     itemBuilder: (BuildContext context, int index) {
       return Column(children: [
         ListTile(
-          title: Text(values[index].title),
-          leading: Image.network(values[index].urlImage.toString()),
-          subtitle: Text("#${values[index].id}"),
+          title: Text(photos[index].title),
+          leading: Image.network(photos[index].urlImage.toString()),
+          subtitle: Text("#${photos[index].id}"),
         ),
         Divider(height: 2.0)
       ],
@@ -77,36 +75,36 @@ Widget createListView(BuildContext context, AsyncSnapshot snapshot) {
     );
 }
 
-Future<List<Album>> _getData() async {
-  List<Album> values = [];
+Future<List<Photo>> getData() async {
+  List<Photo> values = [];
 
 final response = await http
       .get(Uri.parse('https://jsonplaceholder.typicode.com/photos'));
 
   if (response.statusCode == 200) {
-    List<Album> photos = (json.decode(response.body) as List)
-      .map((data) => Album.fromJson(data))
+    List<Photo> photos = (json.decode(response.body) as List)
+      .map((data) => Photo.fromJson(data))
       .toList();
    values.addAll(photos);
   } else {
-    throw Exception('Failed to load album');
+    throw Exception('Failed to load photos');
   }
   return values;
 }
 
-class Album {
+class Photo {
   final int id;
   final String title;
   final String urlImage;
 
-  Album({
+  Photo({
     required this.id,
     required this.title,
     required this.urlImage,
   });
 
-  factory Album.fromJson(Map<String, dynamic> json) {
-    return Album(
+  factory Photo.fromJson(Map<String, dynamic> json) {
+    return Photo(
       id: json['id'],
       title: json['title'],
       urlImage: json['thumbnailUrl'],
